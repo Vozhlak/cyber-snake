@@ -29,7 +29,7 @@ func NewGame(width, height int) *Game {
 		snake:    []Point{{x: width / 2, y: height / 2}},
 		food:     Point{x: 4, y: 4},
 		malware:  make([]Point, 0),
-		dir:      Point{x: 1, y: 0},
+		dir:      Point{x: -1, y: 0},
 		score:    0,
 		level:    1,
 		gameOver: false,
@@ -68,7 +68,14 @@ func (g *Game) draw() {
 	screenX := head.x
 	screenY := head.y + 1
 
-	termbox.SetCell(screenX, screenY, '█', termbox.ColorGreen, termbox.ColorDefault)
+	headToRune := g.dir.ToRune()
+
+	termbox.SetCell(screenX, screenY, headToRune, termbox.ColorGreen, termbox.ColorDefault)
+	if len(g.snake) > 1 {
+		for _, body := range g.snake[1:] {
+			termbox.SetCell(body.x, body.y+1, '○', termbox.ColorGreen, termbox.ColorDefault)
+		}
+	}
 
 	err = termbox.Flush()
 	if err != nil {
@@ -76,23 +83,84 @@ func (g *Game) draw() {
 	}
 }
 
-func main() {
+func (p Point) ToRune() rune {
+	x := p.x
+	y := p.y
 
+	switch {
+	case x > 0:
+		return '▶'
+	case x < 0:
+		return '◀'
+	case y > 0:
+		return '▼'
+	case y < 0:
+		return '▲'
+	default:
+		return '●'
+	}
+}
+
+func (g *Game) handleInput(ev termbox.Event) {
+	eventType := ev.Type
+	if eventType != termbox.EventKey {
+		return
+	}
+
+	switch {
+	case ev.Key == termbox.KeyEsc || ev.Ch == 'q' || ev.Ch == 'Q' || ev.Ch == 'й' || ev.Ch == 'Й':
+		select {
+		case <-g.quit:
+		default:
+			close(g.quit)
+		}
+		return
+
+	case (ev.Key == termbox.KeyArrowUp) || ev.Ch == 'w' || ev.Ch == 'W' || ev.Ch == 'ц' || ev.Ch == 'Ц':
+		if g.dir.y != 1 {
+			g.dir = Point{0, -1}
+		}
+
+	case ev.Key == termbox.KeyArrowRight || ev.Ch == 'd' || ev.Ch == 'D' || ev.Ch == 'в' || ev.Ch == 'В':
+		if g.dir.x != -1 {
+			g.dir = Point{1, 0}
+		}
+
+	case ev.Key == termbox.KeyArrowDown || ev.Ch == 's' || ev.Ch == 'S' || ev.Ch == 'ы' || ev.Ch == 'Ы':
+		if g.dir.y != -1 {
+			g.dir = Point{0, 1}
+		}
+
+	case ev.Key == termbox.KeyArrowLeft || ev.Ch == 'a' || ev.Ch == 'A' || ev.Ch == 'ф' || ev.Ch == 'Ф':
+		g.dir = Point{-1, 0}
+	}
+}
+
+func main() {
 	err := termbox.Init()
 	if err != nil {
 		return
 	}
 	defer termbox.Close()
 
+	eventCh := make(chan termbox.Event)
+
 	game := NewGame(40, 20)
 	game.draw()
 
+	go func() {
+		for {
+			eventCh <- termbox.PollEvent()
+		}
+	}()
+
 	for {
-		event := termbox.PollEvent()
-		if event.Type == termbox.EventKey {
-			if event.Key == termbox.KeyEsc || event.Ch == 'q' {
-				break
-			}
+		select {
+		case ev := <-eventCh:
+			game.handleInput(ev)
+			game.draw()
+		case <-game.quit:
+			return
 		}
 	}
 }
