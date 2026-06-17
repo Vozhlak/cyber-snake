@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/nsf/termbox-go"
+)
 
 type Point struct {
 	x int
@@ -35,15 +39,60 @@ func NewGame(width, height int) *Game {
 	}
 }
 
-func main() {
-	game := NewGame(20, 40)
+func (g *Game) draw() {
+	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	if err != nil {
+		return
+	}
 
-	fmt.Printf(
-		"Игра создана: поле %dx%d, змейка в (%d, %d), направление вправо, уровень %d\n",
-		game.width,
-		game.height,
-		game.snake[0].x,
-		game.snake[0].y,
-		game.level,
-	)
+	for x := 1; x <= g.width; x++ {
+		termbox.SetCell(x, 0, '─', termbox.ColorCyan, termbox.ColorDefault)
+		termbox.SetCell(x, g.height+2, '─', termbox.ColorCyan, termbox.ColorDefault)
+	}
+	for y := 1; y <= g.height+1; y++ {
+		termbox.SetCell(0, y, '│', termbox.ColorCyan, termbox.ColorDefault)
+		termbox.SetCell(g.width+1, y, '│', termbox.ColorCyan, termbox.ColorDefault)
+	}
+
+	termbox.SetCell(0, 0, '┌', termbox.ColorCyan, termbox.ColorDefault)
+	termbox.SetCell(g.width+1, 0, '┐', termbox.ColorCyan, termbox.ColorDefault)
+	termbox.SetCell(0, g.height+2, '└', termbox.ColorCyan, termbox.ColorDefault)
+	termbox.SetCell(g.width+1, g.height+2, '┘', termbox.ColorCyan, termbox.ColorDefault)
+
+	text := fmt.Sprintf("Score: %d Level: %d", g.score, g.level)
+	for i, ch := range text {
+		termbox.SetCell(i+2, 1, ch, termbox.ColorYellow, termbox.ColorDefault)
+	}
+
+	head := g.snake[0]
+	screenX := head.x
+	screenY := head.y + 1
+
+	termbox.SetCell(screenX, screenY, '█', termbox.ColorGreen, termbox.ColorDefault)
+
+	err = termbox.Flush()
+	if err != nil {
+		return
+	}
+}
+
+func main() {
+
+	err := termbox.Init()
+	if err != nil {
+		return
+	}
+	defer termbox.Close()
+
+	game := NewGame(40, 20)
+	game.draw()
+
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventKey {
+			if event.Key == termbox.KeyEsc || event.Ch == 'q' {
+				break
+			}
+		}
+	}
 }
