@@ -70,14 +70,16 @@ func TestIsOutOfBounds(t *testing.T) {
 		p    Point
 		want bool
 	}{
-		{"left border outside", Point{0, 5}, true},
-		{"top border outside", Point{5, 0}, true},
-		{"right border outside", Point{39, 5}, true},
-		{"bottom border outside", Point{5, 19}, true},
-		{"inside", Point{5, 5}, false},
-		{"last valid cell", Point{38, 18}, false},
-		{"past valid x", Point{39, 18}, true},
-		{"past valid y", Point{38, 19}, true},
+		{"left outside", Point{0, 5}, true},
+		{"top outside", Point{5, 0}, true},
+		{"right outside", Point{41, 5}, true},
+		{"bottom outside", Point{5, 21}, true},
+
+		{"top-left inside", Point{1, 1}, false},
+		{"top-right inside", Point{40, 1}, false},
+		{"bottom-left inside", Point{1, 20}, false},
+		{"bottom-right inside", Point{40, 20}, false},
+		{"middle inside", Point{20, 10}, false},
 	}
 
 	for _, tt := range tests {

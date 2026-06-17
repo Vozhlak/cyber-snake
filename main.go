@@ -47,17 +47,17 @@ func (g *Game) draw() {
 
 	for x := 1; x <= g.width; x++ {
 		termbox.SetCell(x, 0, '─', termbox.ColorCyan, termbox.ColorDefault)
-		termbox.SetCell(x, g.height+2, '─', termbox.ColorCyan, termbox.ColorDefault)
+		termbox.SetCell(x, g.height+1, '─', termbox.ColorCyan, termbox.ColorDefault)
 	}
-	for y := 1; y <= g.height+1; y++ {
+	for y := 1; y <= g.height; y++ {
 		termbox.SetCell(0, y, '│', termbox.ColorCyan, termbox.ColorDefault)
 		termbox.SetCell(g.width+1, y, '│', termbox.ColorCyan, termbox.ColorDefault)
 	}
 
 	termbox.SetCell(0, 0, '┌', termbox.ColorCyan, termbox.ColorDefault)
 	termbox.SetCell(g.width+1, 0, '┐', termbox.ColorCyan, termbox.ColorDefault)
-	termbox.SetCell(0, g.height+2, '└', termbox.ColorCyan, termbox.ColorDefault)
-	termbox.SetCell(g.width+1, g.height+2, '┘', termbox.ColorCyan, termbox.ColorDefault)
+	termbox.SetCell(0, g.height+1, '└', termbox.ColorCyan, termbox.ColorDefault)
+	termbox.SetCell(g.width+1, g.height+1, '┘', termbox.ColorCyan, termbox.ColorDefault)
 
 	text := fmt.Sprintf("Score: %d Level: %d", g.score, g.level)
 	for i, ch := range text {
@@ -159,7 +159,7 @@ func (g *Game) isOnMalware(p Point) bool {
 }
 
 func (g *Game) isOutOfBounds(p Point) bool {
-	return p.x < 1 || p.x > g.width-2 || p.y < 1 || p.y > g.height-2
+	return p.x < 1 || p.x > g.width || p.y < 1 || p.y > g.height
 }
 
 func main() {
