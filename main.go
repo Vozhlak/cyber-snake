@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Point struct {
 	x int
 	y int
@@ -18,20 +20,30 @@ type Game struct {
 	quit     chan struct{}
 }
 
-func NewGame() *Game {
+func NewGame(width, height int) *Game {
 	return &Game{
-		snake:    make([]Point, 0),
+		snake:    []Point{{x: width / 2, y: height / 2}},
 		food:     Point{x: 4, y: 4},
 		malware:  make([]Point, 0),
-		dir:      Point{x: 1, y: 2},
+		dir:      Point{x: 1, y: 0},
 		score:    0,
 		level:    1,
 		gameOver: false,
-		height:   500,
-		width:    500,
+		width:    width,
+		height:   height,
 		quit:     make(chan struct{}),
 	}
 }
 
 func main() {
+	game := NewGame(20, 40)
+
+	fmt.Printf(
+		"Игра создана: поле %dx%d, змейка в (%d, %d), направление вправо, уровень %d\n",
+		game.width,
+		game.height,
+		game.snake[0].x,
+		game.snake[0].y,
+		game.level,
+	)
 }
