@@ -132,7 +132,9 @@ func (g *Game) handleInput(ev termbox.Event) {
 		}
 
 	case ev.Key == termbox.KeyArrowLeft || ev.Ch == 'a' || ev.Ch == 'A' || ev.Ch == 'ф' || ev.Ch == 'Ф':
-		g.dir = Point{-1, 0}
+		if g.dir.x != 1 {
+			g.dir = Point{-1, 0}
+		}
 	}
 }
 
