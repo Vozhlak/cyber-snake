@@ -268,7 +268,7 @@ func (g *Game) drawGameOver() {
 	}
 }
 
-func main() {
+func playGame() {
 	err := termbox.Init()
 	if err != nil {
 		return
@@ -277,6 +277,7 @@ func main() {
 
 	eventCh := make(chan termbox.Event)
 	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
 
 	game := NewGame(40, 20)
 	game.draw()
@@ -301,4 +302,8 @@ func main() {
 			return
 		}
 	}
+}
+
+func main() {
+	playGame()
 }
