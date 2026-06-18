@@ -127,15 +127,24 @@ func (g *Game) handleInput(ev termbox.Event) {
 		return
 	}
 
-	switch {
-	case ev.Key == termbox.KeyEsc || ev.Ch == 'q' || ev.Ch == 'Q' || ev.Ch == 'й' || ev.Ch == 'Й':
-		select {
-		case <-g.quit:
-		default:
-			close(g.quit)
+	if g.gameOver {
+		if ev.Key == termbox.KeyEsc || ev.Ch == 'q' || ev.Ch == 'Q' || ev.Ch == 'й' || ev.Ch == 'Й' {
+			select {
+			case <-g.quit:
+			default:
+				close(g.quit)
+			}
+			return
 		}
-		return
 
+		if ev.Ch == 'r' || ev.Ch == 'R' || ev.Ch == 'к' || ev.Ch == 'К' {
+			*g = *NewGame(g.width, g.height)
+		}
+
+		return
+	}
+
+	switch {
 	case (ev.Key == termbox.KeyArrowUp) || ev.Ch == 'w' || ev.Ch == 'W' || ev.Ch == 'ц' || ev.Ch == 'Ц':
 		if g.dir.y != 1 {
 			g.dir = Point{0, -1}
@@ -155,13 +164,6 @@ func (g *Game) handleInput(ev termbox.Event) {
 		if g.dir.x != 1 {
 			g.dir = Point{-1, 0}
 		}
-
-	case ev.Ch == 'r' || ev.Ch == 'R' || ev.Ch == 'к' || ev.Ch == 'К':
-		if !g.gameOver {
-			return
-		}
-
-		*g = *NewGame(g.width, g.height)
 	}
 }
 
