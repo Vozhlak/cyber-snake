@@ -31,7 +31,7 @@ func NewGame(width, height int) *Game {
 		snake:    []Point{{x: width / 2, y: height / 2}},
 		food:     Point{x: 4, y: 4},
 		malware:  make([]Point, 0),
-		dir:      Point{x: 0, y: -1},
+		dir:      Point{x: 1, y: 0},
 		score:    0,
 		level:    1,
 		gameOver: false,
@@ -155,6 +155,13 @@ func (g *Game) handleInput(ev termbox.Event) {
 		if g.dir.x != 1 {
 			g.dir = Point{-1, 0}
 		}
+
+	case ev.Ch == 'r' || ev.Ch == 'R' || ev.Ch == 'к' || ev.Ch == 'К':
+		if !g.gameOver {
+			return
+		}
+
+		*g = *NewGame(g.width, g.height)
 	}
 }
 
@@ -284,7 +291,9 @@ func main() {
 			game.handleInput(ev)
 			game.draw()
 		case <-ticker.C:
-			game.move()
+			if !game.gameOver {
+				game.move()
+			}
 			game.draw()
 		case <-game.quit:
 			return
