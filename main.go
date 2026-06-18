@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/nsf/termbox-go"
 )
@@ -206,6 +207,22 @@ func (g *Game) placeMalware() {
 	g.malware = append(g.malware, p)
 }
 
+func (g *Game) move() {
+	oldHead := g.snake[0]
+	newHead := Point{x: oldHead.x + g.dir.x, y: oldHead.y + g.dir.y}
+	if g.isOutOfBounds(newHead) || g.isOnSnake(newHead) || g.isOnMalware(newHead) {
+		g.gameOver = true
+	}
+
+	g.snake = append([]Point{newHead}, g.snake...)
+	if newHead.x == g.food.x && newHead.y == g.food.y {
+		g.score++
+		g.placeFood()
+	} else {
+		g.snake = g.snake[:len(g.snake)-1]
+	}
+}
+
 func main() {
 	err := termbox.Init()
 	if err != nil {
@@ -214,6 +231,7 @@ func main() {
 	defer termbox.Close()
 
 	eventCh := make(chan termbox.Event)
+	ticker := time.NewTicker(100 * time.Millisecond)
 
 	game := NewGame(40, 20)
 	game.draw()
@@ -228,6 +246,13 @@ func main() {
 		select {
 		case ev := <-eventCh:
 			game.handleInput(ev)
+			game.draw()
+		case <-ticker.C:
+			if game.gameOver {
+				return
+			}
+
+			game.move()
 			game.draw()
 		case <-game.quit:
 			return
