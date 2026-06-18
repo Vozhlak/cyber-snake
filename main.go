@@ -47,6 +47,11 @@ func NewGame(width, height int) *Game {
 }
 
 func (g *Game) draw() {
+	if g.gameOver {
+		g.drawGameOver()
+		return
+	}
+
 	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	if err != nil {
 		return
@@ -212,6 +217,7 @@ func (g *Game) move() {
 	newHead := Point{x: oldHead.x + g.dir.x, y: oldHead.y + g.dir.y}
 	if g.isOutOfBounds(newHead) || g.isOnSnake(newHead) || g.isOnMalware(newHead) {
 		g.gameOver = true
+		return
 	}
 
 	g.snake = append([]Point{newHead}, g.snake...)
@@ -224,6 +230,32 @@ func (g *Game) move() {
 		g.placeFood()
 	} else {
 		g.snake = g.snake[:len(g.snake)-1]
+	}
+}
+
+func drawCenteredString(y int, s string, width int, fg termbox.Attribute) {
+	str := []rune(s)
+	x := (width - len(str)) / 2
+
+	for i, ch := range str {
+		termbox.SetCell(x+i, y, ch, fg, termbox.ColorDefault)
+	}
+}
+
+func (g *Game) drawGameOver() {
+	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	if err != nil {
+		return
+	}
+
+	totalData := fmt.Sprintf("Score: %d  Level: %d", g.score, g.level)
+	drawCenteredString(2, "GAME OVER", g.width, termbox.ColorRed)
+	drawCenteredString(3, totalData, g.width, termbox.ColorYellow)
+	drawCenteredString(5, "R - restart, Q - quit", g.width, termbox.ColorCyan)
+
+	err = termbox.Flush()
+	if err != nil {
+		return
 	}
 }
 
@@ -252,10 +284,6 @@ func main() {
 			game.handleInput(ev)
 			game.draw()
 		case <-ticker.C:
-			if game.gameOver {
-				return
-			}
-
 			game.move()
 			game.draw()
 		case <-game.quit:
